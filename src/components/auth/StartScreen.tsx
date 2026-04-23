@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Lock, User } from 'lucide-react';
 import { isAdminSetup } from '@/lib/store';
 import { getStoreInfo } from '@/lib/settings';
-import scLogo from '@/assets/supermarket-cashier-logo-v2.jpeg';
+import scLogo from '@/assets/gym-logo.png';
 import { HiddenActivationAdmin } from './ActivationGate';
 import CompanyCredits from './CompanyCredits';
 
@@ -48,10 +48,10 @@ const StartScreen = ({ onAdminLogin, onCashierLogin }: StartScreenProps) => {
       <div className="w-full max-w-sm space-y-6 text-center py-6">
         {/* Logo */}
         <div className="space-y-3">
-          <div className="w-28 h-28 mx-auto rounded-2xl overflow-hidden shadow-lg">
-            <img src={scLogo} alt="SUPERMARKET CASHIER" className="w-full h-full object-cover" />
+          <div className="w-28 h-28 mx-auto rounded-2xl overflow-hidden shadow-lg flex items-center justify-center bg-card">
+            <img src={scLogo} alt="GYM" className="w-full h-full object-contain" />
           </div>
-          <h1 className="font-cairo font-black text-2xl">{storeInfo.name || 'SUPERMARKET CASHIER'}</h1>
+          <h1 className="font-cairo font-black text-2xl">{storeInfo.name || 'GYM'}</h1>
           {storeInfo.address && (
             <p className="font-cairo text-muted-foreground text-xs">{storeInfo.address}</p>
           )}

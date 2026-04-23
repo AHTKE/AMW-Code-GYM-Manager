@@ -1,7 +1,7 @@
 // Scanner page: scans QR/barcode and registers attendance.
 import { useState, useRef, useEffect } from 'react';
-import { findMemberByCode, getActiveSubscription, addAttendance, getLastAttendanceForMember, getSettings, getStoreInfo, updateSubscription } from '@/lib/gymStore';
-import { Member, Attendance, Subscription } from '@/types/gym';
+import { findMemberByCode, getActiveSubscription, addAttendance, getLastAttendanceForMember, getSettings, getStoreInfo, updateSubscription, getTrainers } from '@/lib/gymStore';
+import { Member, Attendance, Subscription, Trainer } from '@/types/gym';
 import { ScanLine, Camera as CameraIcon, CheckCircle2, XCircle, User, Clock, AlertTriangle, Keyboard, CalendarOff } from 'lucide-react';
 import CameraScanner from './CameraScanner';
 import { fmtDate, todayISO } from '@/lib/format';
@@ -9,7 +9,7 @@ import { fmtDate, todayISO } from '@/lib/format';
 const DAY_NAMES = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 
 type ScanResult =
-  | { kind: 'success'; member: Member; type: 'check-in'|'check-out'; subEnd: string; sessionsLeft?: number }
+  | { kind: 'success'; member: Member; type: 'check-in'|'check-out'; subEnd: string; sessionsLeft?: number; planName?: string; trainerName?: string }
   | { kind: 'expired'; member: Member; subEnd: string }
   | { kind: 'no-sub'; member: Member }
   | { kind: 'frozen'; member: Member }
@@ -64,7 +64,8 @@ const ScannerPage = ({ staffName }: { staffName: string }) => {
       sessionsLeft = Math.max(0, sub.sessionsTotal - used);
     }
     if (sub) {
-      setLast({ kind: 'success', member, type: att.type, subEnd: sub.endDate, sessionsLeft });
+      const trainer = member.trainerId ? getTrainers().find(t => t.id === member.trainerId) : null;
+      setLast({ kind: 'success', member, type: att.type, subEnd: sub.endDate, sessionsLeft, planName: sub.planName, trainerName: trainer?.name });
     }
     beep(true);
   };
@@ -193,7 +194,17 @@ const ScannerPage = ({ staffName }: { staffName: string }) => {
                   <div className="text-right">
                     <div className="font-cairo font-black text-lg">{last.member.name}</div>
                     <div className="font-mono text-primary text-sm">{last.member.code}</div>
-                    <div className="text-xs text-muted-foreground font-cairo">ينتهي: {fmtDate(last.subEnd)}</div>
+                    {last.planName && (
+                      <div className="text-xs font-cairo mt-1">
+                        <span className="px-2 py-0.5 rounded bg-secondary text-foreground/80 font-bold">📋 {last.planName}</span>
+                      </div>
+                    )}
+                    {last.trainerName && (
+                      <div className="text-xs font-cairo mt-1">
+                        <span className="px-2 py-0.5 rounded bg-accent text-accent-foreground font-bold">🏋️ مدرب: {last.trainerName}</span>
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground font-cairo mt-1">ينتهي: {fmtDate(last.subEnd)}</div>
                     {typeof last.sessionsLeft === 'number' && (
                       <div className="text-xs font-cairo mt-1">
                         <span className="px-2 py-0.5 rounded bg-primary/15 text-primary font-bold">
