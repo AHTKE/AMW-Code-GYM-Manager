@@ -11,7 +11,9 @@ export default defineConfig(() => ({
   },
   server: {
     host: "::",
-    port: 8080,
+    // Unique dev port per project — prevents localStorage sharing across apps on localhost
+    port: 8091,
+    strictPort: false,
     hmr: {
       overlay: false,
     },

@@ -1,6 +1,10 @@
 const { app, BrowserWindow, Menu, dialog } = require('electron');
 const path = require('path');
 
+// Unique app identity — keeps storage isolated from any other Electron app on the same machine
+app.setName('Gym Management');
+app.setPath('userData', path.join(app.getPath('appData'), 'GymManagement-AMW'));
+
 // Disable hardware acceleration for old GPUs / Windows 7
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
@@ -23,7 +27,7 @@ if (!gotTheLock) {
       minWidth: 800,
       minHeight: 600,
       icon: path.join(__dirname, '..', 'build', 'icon.png'),
-      title: 'SUPERMARKET CASHIER',
+      title: 'Gym Management',
       show: false,
       webPreferences: {
         nodeIntegration: false,

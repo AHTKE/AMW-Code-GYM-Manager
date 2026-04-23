@@ -6,13 +6,14 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   LogOut, ScanLine, LayoutGrid, Users, Activity, Package, CalendarDays,
   UserCog, Gift, DollarSign, Settings, Sun, Moon, ArrowRight, Clock, Sliders,
+  Keyboard, Maximize2, Minimize2,
 } from 'lucide-react';
 import { Staff } from '@/types/gym';
 import { GymStaffPermissions, getStaffPermissions, hasFeature, GymFeatureKey } from '@/lib/gymPermissions';
 import { PermissionsProvider } from '@/lib/permissionsContext';
 import { getStoreInfo } from '@/lib/gymStore';
 import { getTheme, saveTheme } from '@/lib/theme';
-import { installShortcutListener } from '@/lib/gymShortcuts';
+import { installShortcutListener, toggleFullscreen } from '@/lib/gymShortcuts';
 import { getActiveShiftFor, openShift, computeShiftSummary, formatDuration, Shift } from '@/lib/shifts';
 
 import ScannerPage from './ScannerPage';
@@ -27,6 +28,8 @@ import FinanceManager from './FinanceManager';
 import OverviewDashboard from './OverviewDashboard';
 import PersonalSettings from './PersonalSettings';
 import CloseShiftDialog from './CloseShiftDialog';
+import ShortcutsHelpDialog from './ShortcutsHelpDialog';
+import ActiveOffersBanner from './ActiveOffersBanner';
 
 import gymLogo from '@/assets/gym-logo.png';
 
@@ -51,6 +54,15 @@ const StaffHub = ({ staff, onLogout }: Props) => {
   const [themeMode, setThemeMode] = useState(getTheme().mode);
   const [closeShiftOpen, setCloseShiftOpen] = useState(false);
   const [activeShift, setActiveShift] = useState<Shift | null>(null);
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Track fullscreen state
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
 
   // Open or resume shift on mount
   useEffect(() => {
@@ -93,9 +105,14 @@ const StaffHub = ({ staff, onLogout }: Props) => {
         case 'goto-members': if (hasFeature(perms,'members.view')) setView('members.view'); break;
         case 'goto-subscriptions': if (hasFeature(perms,'subscriptions.view')) setView('subscriptions.view'); break;
         case 'goto-attendance': if (hasFeature(perms,'attendance.view')) setView('attendance.view'); break;
+        case 'goto-trainers': if (hasFeature(perms,'trainers.view')) setView('trainers.view'); break;
+        case 'goto-classes': if (hasFeature(perms,'classes.view')) setView('classes.view'); break;
+        case 'goto-offers': if (hasFeature(perms,'offers.view')) setView('offers.view'); break;
         case 'goto-finance': if (hasFeature(perms,'finance.view')) setView('finance.view'); break;
         case 'logout': handleLogoutClick(); break;
         case 'toggle-theme': if (canTheme) toggleTheme(); break;
+        case 'toggle-fullscreen': toggleFullscreen(); break;
+        case 'show-shortcuts': setShowShortcutsHelp(true); break;
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,13 +139,19 @@ const StaffHub = ({ staff, onLogout }: Props) => {
             : <img src={gymLogo} alt="" className="w-7 h-7" />}
           <span className="font-cairo font-black">{store.name || 'GYM'}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <button onClick={()=>setShowShortcutsHelp(true)} title="الاختصارات (F1)" className="p-1.5 rounded hover:bg-secondary text-muted-foreground">
+            <Keyboard className="w-4 h-4" />
+          </button>
+          <button onClick={toggleFullscreen} title="ملء الشاشة (F11)" className="p-1.5 rounded hover:bg-secondary text-muted-foreground">
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
           {canTheme && (
             <button onClick={toggleTheme} title="تبديل الثيم" className="p-1.5 rounded hover:bg-secondary text-muted-foreground">
               {themeMode === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           )}
-          <span className="text-xs text-muted-foreground font-cairo hidden sm:inline">{staff.name}</span>
+          <span className="text-xs text-muted-foreground font-cairo hidden sm:inline mr-1">{staff.name}</span>
         </div>
       </div>
 
@@ -136,10 +159,14 @@ const StaffHub = ({ staff, onLogout }: Props) => {
       {view === 'scanner' ? (
         <>
           <div className="flex-1 overflow-auto">
-            {hasFeature(perms, 'attendance.scan')
-              ? <ScannerPage staffName={staff.name} />
-              : <NoAccess label="ليس لديك صلاحية لاستخدام الماسح" />
-            }
+            {hasFeature(perms, 'attendance.scan') ? (
+              <>
+                <ActiveOffersBanner />
+                <ScannerPage staffName={staff.name} />
+              </>
+            ) : (
+              <NoAccess label="ليس لديك صلاحية لاستخدام الماسح" />
+            )}
           </div>
           {visibleTiles.length > 0 && (
             <div className="border-t border-border bg-card p-3">
@@ -176,6 +203,8 @@ const StaffHub = ({ staff, onLogout }: Props) => {
           onConfirmed={()=>{ setCloseShiftOpen(false); onLogout(); }}
         />
       )}
+
+      {showShortcutsHelp && <ShortcutsHelpDialog onClose={()=>setShowShortcutsHelp(false)} />}
     </div>
     </PermissionsProvider>
   );

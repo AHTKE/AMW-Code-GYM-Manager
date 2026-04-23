@@ -1,11 +1,11 @@
 {
-  "name": "supermarket-cashier",
+  "name": "gym-management-system",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "main": "electron/main.cjs",
   "author": "Ahmed Mohamed Wahba",
-  "description": "SUPERMARKET CASHIER - نظام نقاط البيع المتكامل",
+  "description": "Gym Management System - نظام إدارة الجيم المتكامل",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -21,8 +21,8 @@
     "dist:all": "vite build && electron-builder --win nsis portable --ia32 --x64"
   },
   "build": {
-    "appId": "com.supermarket.cashier",
-    "productName": "SUPERMARKET CASHIER",
+    "appId": "com.amw.gym.management",
+    "productName": "Gym Management",
     "copyright": "Copyright © 2025 Ahmed Mohamed Wahba",
     "directories": {
       "output": "release",
@@ -62,7 +62,7 @@
       "installerHeaderIcon": "build/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "SUPERMARKET CASHIER",
+      "shortcutName": "Gym Management",
       "artifactName": "${productName}-${version}-${arch}-Setup.${ext}"
     },
     "portable": {
